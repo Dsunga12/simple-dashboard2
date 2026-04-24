@@ -3,10 +3,40 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard</title>
+    <title>GYG Singapore Peak Hour Championship</title>
+    <script>
+      // Suppress MetaMask/Ethereum extension errors as early as possible
+      (function() {
+        const suppressPatterns = [/metamask/i, /ethereum/i, /web3/i, /rpc/i, /wallet/i];
+        const isSuppressed = (val) => {
+          if (!val) return false;
+          const str = typeof val === 'string' ? val : (val.message || JSON.stringify(val));
+          if (typeof str !== 'string') return false;
+          return suppressPatterns.some(pattern => pattern.test(str));
+        };
+
+        const wrap = (original) => function(...args) {
+          if (args.some(isSuppressed)) return;
+          return original.apply(this, args);
+        };
+
+        console.error = wrap(console.error);
+        console.warn = wrap(console.warn);
+        console.info = wrap(console.info);
+        console.log = wrap(console.log);
+
+        window.addEventListener('unhandledrejection', (event) => {
+          if (isSuppressed(event.reason)) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }, true);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
+
